@@ -398,10 +398,10 @@
                 position: fixed;
                 right: auto; /* 不固定在页面右侧 */
                 left: auto; /* 不固定在页面左侧 */
-                bottom: 3em; /* 与footer上内边距对齐 */
+                bottom: 3em; /* 与 footer 上内边距对齐 */
             }
             
-            /* 确保桌面端的toc-widget有一致的左边距，便于对齐 */
+            /* 确保桌面端的 toc-widget 有一致的左边距，便于对齐 */
             #toc-widget {
                 margin-left: 0;
             }
@@ -832,10 +832,10 @@
                     backToTopButton.style.left = leftPosition + 'px';
                     backToTopButton.style.right = 'auto';
                     
-                    // 尝试找到footer元素并调整按钮位置与其对齐
+                    // 尝试找到 footer 元素并调整按钮位置与其对齐
                     const footer = document.getElementById('footer');
                     if (footer) {
-                        // 从footer获取顶部padding值并应用到按钮
+                        // 从 footer 获取顶部 padding 值并应用到按钮
                         const footerStyle = window.getComputedStyle(footer);
                         const footerPaddingTop = footerStyle.getPropertyValue('padding-top');
                         if (footerPaddingTop) {
