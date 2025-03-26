@@ -393,11 +393,12 @@
                 display: none !important;
             }
 
-            /* 桌面端返回顶部按钮放在目录左边框下方 */
+            /* 桌面端返回顶部按钮放在目录容器区域内 */
             .back-to-top-button {
-                left: 25px; /* 与目录左边对齐，添加一些留白 */
-                bottom: 20px;
-                right: auto; /* 取消右边距 */
+                position: fixed;
+                right: auto; /* 不固定在页面右侧 */
+                left: auto; /* 不固定在页面左侧 */
+                bottom: 3em; /* 与footer上内边距对齐 */
             }
             
             /* 确保桌面端的toc-widget有一致的左边距，便于对齐 */
@@ -476,7 +477,7 @@
                 const isTocButtonVisible = button.style.display !== 'none' && button.style.display !== '';
 
                 // 返回按钮位置
-                if (backToTopButton && isMobile) { // 只在移动设备上调整
+                if (backToTopButton && isMobileDevice()) { // 只在移动设备上调整
                     if (isTocButtonVisible) {
                         // 显示时
                         backToTopButton.style.bottom = 'calc(var(--button-bottom-position) + 60px)';
@@ -804,11 +805,78 @@
                 const tocWidget = document.getElementById('toc-widget');
                 if (!backToTopButton) return;
                 
-                // 桌面端时，将返回顶部按钮放在目录左边框下方
-                if (!isMobileDevice() && tocWidget) {
-                    // 使用CSS设置的固定位置，无需动态计算
-                    backToTopButton.style.left = '25px';
+                // 桌面端时，将返回顶部按钮与目录左边框垂直对齐并调整底部位置
+                if (!isMobileDevice()) {
+                    let leftPosition;
+                    // 记录目录是否可见
+                    const isTocVisible = tocWidget && window.getComputedStyle(tocWidget).display !== 'none';
+                    
+                    if (isTocVisible) {
+                        // 有目录时，使用目录左边框位置
+                        const tocRect = tocWidget.getBoundingClientRect();
+                        leftPosition = tocRect.left;
+                    } else {
+                        // 没有目录时，计算目录的默认位置
+                        // 使用侧边栏的位置来计算
+                        const secondary = document.getElementById('secondary');
+                        if (secondary) {
+                            const secondaryRect = secondary.getBoundingClientRect();
+                            leftPosition = secondaryRect.left;
+                        } else {
+                            // 如果无法获取侧边栏位置，使用一个合理的默认值
+                            leftPosition = window.innerWidth * 0.15; // 默认值，大约是侧边栏起始位置
+                        }
+                    }
+                    
+                    // 应用位置设置
+                    backToTopButton.style.left = leftPosition + 'px';
                     backToTopButton.style.right = 'auto';
+                    
+                    // 尝试找到footer元素并调整按钮位置与其对齐
+                    const footer = document.getElementById('footer');
+                    if (footer) {
+                        // 从footer获取顶部padding值并应用到按钮
+                        const footerStyle = window.getComputedStyle(footer);
+                        const footerPaddingTop = footerStyle.getPropertyValue('padding-top');
+                        if (footerPaddingTop) {
+                            backToTopButton.style.bottom = footerPaddingTop;
+                        }
+                    }
+                    
+                    // 添加窗口大小变化监听，保证位置一致性
+                    window.addEventListener('resize', function() {
+                        if (!isMobileDevice()) {
+                            // 重新检查目录是否可见
+                            const isResizedTocVisible = tocWidget && window.getComputedStyle(tocWidget).display !== 'none';
+                            let updatedLeftPosition;
+                            
+                            if (isResizedTocVisible) {
+                                // 有目录时使用目录位置
+                                const updatedTocRect = tocWidget.getBoundingClientRect();
+                                updatedLeftPosition = updatedTocRect.left;
+                            } else {
+                                // 没有目录时使用侧边栏位置
+                                const secondary = document.getElementById('secondary');
+                                if (secondary) {
+                                    const secondaryRect = secondary.getBoundingClientRect();
+                                    updatedLeftPosition = secondaryRect.left;
+                                } else {
+                                    updatedLeftPosition = window.innerWidth * 0.15;
+                                }
+                            }
+                            
+                            backToTopButton.style.left = updatedLeftPosition + 'px';
+                            
+                            // 重新调整底部位置
+                            if (footer) {
+                                const updatedFooterStyle = window.getComputedStyle(footer);
+                                const updatedPaddingTop = updatedFooterStyle.getPropertyValue('padding-top');
+                                if (updatedPaddingTop) {
+                                    backToTopButton.style.bottom = updatedPaddingTop;
+                                }
+                            }
+                        }
+                    });
                 }
 
                 // 滚动监听
